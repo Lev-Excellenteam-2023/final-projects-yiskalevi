@@ -1,41 +1,41 @@
 import openai
-import time
+import asyncio
 
-openai.api_key = "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"
+api_key_file = 'api_key_file.txt'  # Replace with the path to your API key file
 
-def list_question_to_the_chatGPT(questions: list) -> list:
+with open(api_key_file, 'r') as file:
+    openai.api_key = file.read().strip()
+
+
+async def generate_chat_response( messages):
+    completion =openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages
+    )
+    chat_response = completion.choices[0].message.content
+    return chat_response
+
+async def list_question_to_the_chatGPT(questions: list) -> list:
     """
-    Sends a list of questions to the chatGPT model and returns the model's responses.
+    Sends a list of questions to the ChatGPT model asynchronously and returns the model's responses.
     """
-    messages = [{"role": "system", "content": ''}]
+    messages = [{"role": "system", "content": ""}]
     list_of_responses = []
-    rate_limit_reached = False
 
+    tasks = []
     for question in questions:
         messages.append({"role": "user", "content": question})
-        print(question)
-        completion = None
+        task = generate_chat_response( messages.copy())
+        tasks.append(task)
 
-        while not completion:
-            try:
-                completion = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages
-                )
-            except openai.error.RateLimitError as e:
-                # print("Rate limit reached. Waiting for 20 seconds...")
-                time.sleep(20)  # Wait for 20 seconds
-                rate_limit_reached = True
+    responses = await asyncio.gather(*tasks)
+    i=0
+    for response in responses:
+        messages.append({"role": "assistant", "content": response})
+        list_of_responses.append(response)
+        i=i+1
 
-        chat_response = completion.choices[0].message.content
-        list_of_responses.append(chat_response)
-        messages.append({"role": "assistant", "content": chat_response})
-
-        if rate_limit_reached:
-            # Reset the rate limit flag
-            rate_limit_reached = False
-
-    return list_of_responses[1:] #We will take down the message of the response and explanation that they sent in the chat.
+    return list_of_responses[1:]
 
 
 
