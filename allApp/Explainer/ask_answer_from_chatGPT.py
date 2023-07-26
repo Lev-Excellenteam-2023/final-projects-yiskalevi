@@ -1,6 +1,7 @@
 import openai
 import asyncio
 
+
 api_key_file = 'api_key_file.txt'  # Replace with the path to your API key file
 
 with open(api_key_file, 'r') as file:
@@ -28,13 +29,14 @@ async def list_question_to_the_chatGPT(questions: list) -> list:
         task = generate_chat_response( messages.copy())
         tasks.append(task)
 
+
     responses = await asyncio.gather(*tasks)
     i=0
     for response in responses:
         messages.append({"role": "assistant", "content": response})
         list_of_responses.append(response)
         i=i+1
-
+    print(list_of_responses)
     return list_of_responses[1:]
 
 
