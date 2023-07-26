@@ -16,8 +16,7 @@ def explain_powerpoint_func(path_of_the_powerPoint: str):
                     Introduction_message_to_chatGPT] + slides  # Create a new list with Introduction_message_to_chatGPT as the first element
     list_of_responses = asyncio.run(ask_answer_from_chatGPT.list_question_to_the_chatGPT(questions))
     json_file = Converts_list_to_file.Converts_list_to_JSON_file(list_of_responses)
-    # print(json_file)
-    return print(json_file)
+    return json_file
 
 
 if __name__ == "__main__":

@@ -1,15 +1,14 @@
 import openai
 import asyncio
 
-
-api_key_file = 'api_key_file.txt'  # Replace with the path to your API key file
+api_key_file = '../api_key_file.txt'  # Replace with the path to your API key file
 
 with open(api_key_file, 'r') as file:
     openai.api_key = file.read().strip()
 
 
-async def generate_chat_response( messages):
-    completion =openai.ChatCompletion.create(
+async def generate_chat_response(messages):
+    completion = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages
     )
@@ -23,21 +22,13 @@ async def list_question_to_the_chatGPT(questions: list) -> list:
     messages = [{"role": "system", "content": ""}]
     list_of_responses = []
 
-    tasks = []
-    for question in questions:
+    async def generate_response(question):
+        nonlocal messages
         messages.append({"role": "user", "content": question})
-        task = generate_chat_response( messages.copy())
-        tasks.append(task)
-
-
-    responses = await asyncio.gather(*tasks)
-    i=0
-    for response in responses:
+        response = await generate_chat_response(messages)
         messages.append({"role": "assistant", "content": response})
         list_of_responses.append(response)
-        i=i+1
-    print(list_of_responses)
+
+    tasks = [generate_response(question) for question in questions]
+    await asyncio.gather(*tasks)
     return list_of_responses[1:]
-
-
-
